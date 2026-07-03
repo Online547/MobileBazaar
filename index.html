@@ -9,6 +9,13 @@
 
 <!-- Installable app: manifest + icons so "Add to Home Screen" shows the Mobile Bazar logo, not a browser tab -->
 <link rel="manifest" href="manifest.json" />
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").catch(() => {});
+  });
+}
+</script>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
