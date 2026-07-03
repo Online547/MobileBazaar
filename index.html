@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +7,15 @@
 <title>Mobile Bazar — Buy & Sell Mobile Phones</title>
 <meta name="description" content="Mobile Bazar is a fast, trusted marketplace to buy and sell new & used mobile phones." />
 <meta name="theme-color" content="#171a21" />
+
+<!-- Installable app: manifest + icons so "Add to Home Screen" shows the Mobile Bazar logo, not a browser tab -->
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Mobile Bazar" />
+<meta name="mobile-web-app-capable" content="yes" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -90,17 +100,11 @@ button { font-family:inherit; cursor:pointer; }
 .featured-rail { display:flex; gap:8px; overflow-x:auto; padding:4px 4px 14px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; }
 .featured-rail::-webkit-scrollbar { height:6px; }
 .featured-rail::-webkit-scrollbar-thumb { background:var(--line); border-radius:4px; }
-.featured-rail .card { flex:0 0 calc((100% - 16px)/3); scroll-snap-align:start; }
-@media (min-width:480px){ .featured-rail{ gap:10px; } .featured-rail .card{ flex-basis:calc((100% - 20px)/3); } }
-@media (min-width:640px){ .featured-rail{ gap:16px; } .featured-rail .card{ flex-basis:calc((100% - 48px)/4); } }
-@media (min-width:940px){ .featured-rail .card{ flex-basis:calc((100% - 64px)/5); } }
-@media (min-width:1180px){ .featured-rail .card{ flex-basis:calc((100% - 80px)/6); } }
+.featured-rail .card { flex:0 0 122px; scroll-snap-align:start; }
+@media (min-width:480px){ .featured-rail{ gap:10px; } .featured-rail .card{ flex-basis:130px; } }
 
-.ad-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.ad-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(122px, 1fr)); gap:8px; }
 @media (min-width:480px){ .ad-grid{ gap:10px; } }
-@media (min-width:640px){ .ad-grid{ grid-template-columns:repeat(4,1fr); gap:16px; } }
-@media (min-width:940px){ .ad-grid{ grid-template-columns:repeat(5,1fr); } }
-@media (min-width:1180px){ .ad-grid{ grid-template-columns:repeat(6,1fr); } }
 
 .card { background:var(--white); border-radius:16px; overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow-card); transition:transform .15s ease, box-shadow .18s ease, border-color .18s ease; display:flex; flex-direction:column; animation:cardIn .4s ease both; -webkit-tap-highlight-color:transparent; }
 @keyframes cardIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
@@ -138,11 +142,8 @@ button { font-family:inherit; cursor:pointer; }
 .no-results.show { display:block; }
 .no-results-title { font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--ink); margin-bottom:6px; }
 
-.skeleton-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.skeleton-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(122px, 1fr)); gap:8px; }
 @media (min-width:480px){ .skeleton-grid{ gap:10px; } }
-@media (min-width:640px){ .skeleton-grid{ grid-template-columns:repeat(4,1fr); gap:16px; } }
-@media (min-width:940px){ .skeleton-grid{ grid-template-columns:repeat(5,1fr); } }
-@media (min-width:1180px){ .skeleton-grid{ grid-template-columns:repeat(6,1fr); } }
 .skeleton-card { border-radius:var(--radius-m); overflow:hidden; background:var(--white); border:1px solid var(--line); }
 .skeleton-media { aspect-ratio:1/1; background:linear-gradient(100deg,var(--line) 30%,#f0f1f3 50%,var(--line) 70%); background-size:200% 100%; animation:shimmer 1.4s ease-in-out infinite; }
 .skeleton-line { height:10px; margin:12px; border-radius:4px; background:linear-gradient(100deg,var(--line) 30%,#f0f1f3 50%,var(--line) 70%); background-size:200% 100%; animation:shimmer 1.4s ease-in-out infinite; }
