@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Mobile Bazar — Buy & Sell Mobile Phones</title>
 <meta name="description" content="Mobile Bazar is a fast, trusted marketplace to buy and sell new & used mobile phones." />
 <meta name="theme-color" content="#171a21" />
@@ -84,7 +84,20 @@ button { font-family:inherit; cursor:pointer; }
 .header-cta { display:none; }
 @media (min-width:860px){ .header-cta{ display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,var(--ink),var(--ink-soft)); color:var(--white); padding:10px 18px; border-radius:999px; font-size:13.5px; font-weight:600; white-space:nowrap; transition:.15s; } .header-cta:hover{ background:var(--signal-dark); transform:translateY(-1px); } }
 
-/* My Ads header button */
+/* Notification bell */
+.notify-btn { position:relative; }
+.notify-dot { position:absolute; top:6px; right:6px; width:9px; height:9px; border-radius:50%; background:var(--danger); border:2px solid var(--white); display:none; }
+.notify-dot.show { display:block; }
+
+/* Notification panel */
+.notify-item { display:flex; gap:12px; padding:14px; border:1px solid var(--line); border-radius:var(--radius-m); background:var(--cloud); margin-bottom:10px; }
+.notify-item img { width:56px; height:56px; border-radius:10px; object-fit:cover; flex-shrink:0; background:var(--white); }
+.notify-item-body { flex:1; min-width:0; }
+.notify-item-title { font-weight:700; font-size:14px; margin-bottom:3px; }
+.notify-item-desc { font-size:12.5px; color:var(--steel); line-height:1.5; white-space:pre-line; }
+.notify-item-btn { display:inline-flex; margin-top:8px; background:var(--signal); color:var(--white); font-size:12px; font-weight:700; padding:7px 14px; border-radius:999px; transition:transform .15s ease; }
+.notify-item-btn:hover { transform:translateY(-1px); }
+.notify-empty { text-align:center; color:var(--steel); padding:30px 0; font-size:13.5px; }
 .my-ads-btn { display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:var(--cloud); border:1px solid var(--line); color:var(--ink); flex-shrink:0; transition:.15s ease; }
 .my-ads-btn:hover { background:var(--line); }
 .my-ads-btn svg { width:18px; height:18px; }
@@ -294,6 +307,14 @@ main { min-height:40vh; }
       </div>
     </div>
 
+    <button id="notifyBtn" class="my-ads-btn notify-btn" type="button" aria-label="Notifications" title="Updates">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9a6 6 0 0 1 12 0c0 4 1.4 5.6 2 6.4H4c.6-.8 2-2.4 2-6.4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M9.5 18.5a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      <span class="notify-dot" id="notifyDot"></span>
+    </button>
+
     <button id="myAdsBtn" class="my-ads-btn" type="button" aria-label="My Ads" title="Meri Ads">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/>
@@ -466,6 +487,20 @@ main { min-height:40vh; }
   </div>
 </div>
 
+<!-- Notifications / Updates panel — content comes from Sheet3 -->
+<div class="modal-overlay" id="notifyOverlay">
+  <div class="modal-card" style="max-width:480px;">
+    <button class="modal-close" type="button" onclick="closeNotify()" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="modal-body" style="padding-top:52px;">
+      <h2 class="detail-name" style="margin-bottom:14px;">Updates</h2>
+      <div id="notifyList"></div>
+      <p class="notify-empty" id="notifyEmpty" style="display:none;">Abhi koi update nahi hai.</p>
+    </div>
+  </div>
+</div>
+
 <script>
 /* =========================================================================
    MOBILE BAZAR — SINGLE FILE BUILD
@@ -477,6 +512,7 @@ const CONFIG = {
   SHEET_ID: "1Pivlyf4Q02tnbfsACCmkQ4NnXgDp-pv5YH4-o4H2n6Q",
   ADS_SHEET_NAME: "Form Responses 1",
   ANNOUNCEMENT_SHEET_NAME: "Sheet1",
+  NOTIFICATIONS_SHEET_NAME: "Sheet3",
   SELL_FORM_URL: "https://online547.github.io/Ad-your-Post-/",
   DEFAULT_WHATSAPP_MESSAGE: (name) => `Hi, I found your listing for "${name}" on Mobile Bazar. Is it still available?`,
 };
@@ -617,7 +653,30 @@ const MobileBazarData = (() => {
     };
   }
 
-  return { getAds, getAnnouncement };
+  function isActiveOrBlank(v) { return String(v || "").trim().toLowerCase() !== "no"; }
+
+  function mapNotification(raw, rowIndex) {
+    return {
+      id: rowIndex + 1,
+      title: (raw["title"] || "").trim(),
+      description: (raw["description"] || "").trim(),
+      image: normalizeDriveImage(raw["image link"] || ""),
+      buttonLink: (raw["button link"] || "").trim(),
+      buttonName: (raw["button name"] || "").trim(),
+      active: isActiveOrBlank(raw["active"]),
+    };
+  }
+
+  async function getNotifications() {
+    const raw = await fetchTab(CONFIG.NOTIFICATIONS_SHEET_NAME);
+    if (!raw.length) return [];
+    return raw
+      .map(mapNotification)
+      .filter((n) => n.active && n.title && n.description)
+      .reverse(); // newest (bottom-most row) first
+  }
+
+  return { getAds, getAnnouncement, getNotifications };
 })();
 
 /* ---- 3. Small helpers ---- */
@@ -1062,9 +1121,53 @@ if (myAdsChangeBtn) myAdsChangeBtn.addEventListener("click", () => {
 });
 document.getElementById("myAdsOverlay").addEventListener("click", (e) => { if (e.target.id === "myAdsOverlay") closeMyAds(); });
 
-/* ---- 9. Init ---- */
+/* ---- 9. Notifications (Sheet3) — bell badge shows only when there's a new entry ---- */
+const NOTIFY_SEEN_KEY = "mb_notify_last_seen_id_v1";
+let latestNotifications = [];
+
+function notifyItemHtml(n) {
+  return `
+    <div class="notify-item">
+      ${n.image ? `<img src="${escapeHtml(n.image)}" alt="" loading="lazy" onerror="this.style.display='none'"/>` : ""}
+      <div class="notify-item-body">
+        <div class="notify-item-title">${escapeHtml(n.title)}</div>
+        <div class="notify-item-desc">${escapeHtml(n.description)}</div>
+        ${n.buttonLink && n.buttonName ? `<a class="notify-item-btn" href="${escapeHtml(n.buttonLink)}" target="_blank" rel="noopener">${escapeHtml(n.buttonName)}</a>` : ""}
+      </div>
+    </div>`;
+}
+
+async function loadNotifications() {
+  const list = await MobileBazarData.getNotifications();
+  latestNotifications = list;
+  const latestId = list.length ? Math.max(...list.map((n) => n.id)) : 0;
+  let seenId = 0;
+  try { seenId = parseInt(localStorage.getItem(NOTIFY_SEEN_KEY) || "0", 10) || 0; } catch (e) {}
+  const dot = document.getElementById("notifyDot");
+  if (dot) dot.classList.toggle("show", latestId > seenId);
+}
+
+function openNotify() {
+  document.getElementById("notifyOverlay").classList.add("show");
+  const listEl = document.getElementById("notifyList");
+  const emptyEl = document.getElementById("notifyEmpty");
+  if (!latestNotifications.length) { listEl.innerHTML = ""; emptyEl.style.display = "block"; }
+  else { emptyEl.style.display = "none"; listEl.innerHTML = latestNotifications.map(notifyItemHtml).join(""); }
+
+  const latestId = latestNotifications.length ? Math.max(...latestNotifications.map((n) => n.id)) : 0;
+  try { localStorage.setItem(NOTIFY_SEEN_KEY, String(latestId)); } catch (e) {}
+  document.getElementById("notifyDot").classList.remove("show");
+}
+function closeNotify() { document.getElementById("notifyOverlay").classList.remove("show"); }
+
+const notifyBtn = document.getElementById("notifyBtn");
+if (notifyBtn) notifyBtn.addEventListener("click", openNotify);
+document.getElementById("notifyOverlay").addEventListener("click", (e) => { if (e.target.id === "notifyOverlay") closeNotify(); });
+
+/* ---- 10. Init ---- */
 wireSellButtons();
 loadAnnouncement();
+loadNotifications();
 const adsReadyPromise = loadAds();
 </script>
 </body>
