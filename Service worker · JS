@@ -1,70 +1,13 @@
-/* Mobile Bazar — minimal service worker
-   Purpose: satisfy PWA installability requirements (Chrome/Android needs a
-   registered service worker to generate a true installed app / WebAPK,
-   which is what makes navigator.setAppBadge() actually show on the home
-   screen icon). Kept intentionally light — it does NOT cache the Google
-   Sheet data or the ad images, so listings always stay live/fresh.
-*/
-
-const CACHE_NAME = "mobile-bazar-shell-v1";
-const SHELL_FILES = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./favicon-32.png",
-  "./apple-touch-icon.png",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./icon-512-maskable.png",
-];
-
+// Minimal service worker — required by Chrome/Edge/Android so the app
+// qualifies as installable and the real "Install" prompt becomes available.
+// It does not cache or intercept anything from your Google Sheet / data setup.
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      cache.addAll(SHELL_FILES).catch(() => {
-        // If any single file 404s, don't fail the whole install.
-      })
-    )
-  );
   self.skipWaiting();
 });
-
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
-  );
   self.clients.claim();
 });
-
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  if (req.method !== "GET") return;
-
-  const url = new URL(req.url);
-
-  // Never intercept the live Google Sheet data or cross-origin requests —
-  // ads/announcements must always come straight from the network.
-  if (url.origin !== self.location.origin) return;
-
-  // Network-first for the HTML shell so listings/design updates show
-  // immediately; falls back to cache only if the device is offline.
-  if (req.mode === "navigate" || url.pathname.endsWith("index.html") || url.pathname.endsWith("/")) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((res) => res || caches.match("./index.html")))
-    );
-    return;
-  }
-
-  // Cache-first for icons/manifest (they rarely change).
-  event.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req))
-  );
+  // Pass-through only — no caching, no interference with any request.
+  event.respondWith(fetch(event.request));
 });
