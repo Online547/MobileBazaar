@@ -52,6 +52,7 @@ html { scroll-behavior: smooth; }
   html { scroll-behavior: auto; }
   *,*::before,*::after { animation-duration:.001ms !important; transition-duration:.001ms !important; }
 }
+html, body { max-width:100%; overflow-x:hidden; }
 body { margin:0; font-family:var(--font-body); background:var(--cloud); color:var(--ink); line-height:1.5; -webkit-font-smoothing:antialiased; }
 img { max-width:100%; display:block; }
 a { color:inherit; text-decoration:none; }
@@ -63,19 +64,28 @@ button { font-family:inherit; cursor:pointer; }
 
 /* Header */
 .site-header { position:sticky; top:0; z-index:40; background:rgba(255,255,255,.82); backdrop-filter:blur(14px) saturate(1.6); -webkit-backdrop-filter:blur(14px) saturate(1.6); border-bottom:1px solid rgba(231,233,237,.8); box-shadow:0 1px 0 rgba(23,26,33,.02); }
-.header-inner { height:60px; display:flex; align-items:center; gap:14px; }
-.brand { display:flex; align-items:center; gap:9px; flex-shrink:0; }
+.header-inner { height:60px; display:flex; align-items:center; gap:10px; min-width:0; }
+.brand { display:flex; align-items:center; gap:9px; flex-shrink:0; min-width:0; }
 .brand-mark { width:32px; height:32px; border-radius:10px; background:linear-gradient(145deg,var(--ink),var(--ink-soft)); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 8px rgba(23,26,33,.25); }
 .brand-text { display:flex; flex-direction:column; line-height:1.1; }
 .brand-name { font-family:var(--font-display); font-weight:700; font-size:17px; letter-spacing:-.01em; }
 .brand-tagline { font-size:11px; color:var(--steel); font-weight:500; }
 @media (max-width:400px){ .brand-tagline{ display:none; } }
 @media (min-width:640px){ .header-inner{ height:68px; gap:20px; } .brand{ gap:10px; } .brand-mark{ width:36px; height:36px; border-radius:10px; } .brand-name{ font-size:19px; } }
-.search-wrap { flex:1; max-width:560px; margin-left:auto; }
-.search-box { position:relative; display:flex; align-items:center; background:var(--cloud); border:1.5px solid var(--line); border-radius:999px; padding:0 6px 0 16px; transition:.15s; }
+.search-wrap { flex:1 1 auto; min-width:0; max-width:560px; margin-left:auto; }
+.search-box { position:relative; display:flex; align-items:center; background:var(--cloud); border:1.5px solid var(--line); border-radius:999px; padding:0 6px 0 14px; transition:.15s; min-width:0; }
 .search-box:focus-within { border-color:var(--signal); background:var(--white); }
 .search-box svg { width:17px; height:17px; color:var(--steel-light); flex-shrink:0; }
-.search-input { flex:1; border:none; background:transparent; padding:11px 10px; font-size:14.5px; color:var(--ink); min-width:0; }
+.search-input { flex:1; min-width:0; width:0; border:none; background:transparent; padding:11px 8px; font-size:14.5px; color:var(--ink); }
+@media (max-width:380px){
+  .header-inner{ gap:7px; }
+  .search-box{ padding:0 4px 0 11px; }
+  .search-input{ padding:10px 6px; font-size:14px; }
+  .my-ads-btn{ width:34px; height:34px; }
+  .my-ads-btn svg{ width:16px; height:16px; }
+  .brand-mark{ width:28px; height:28px; }
+  .brand-name{ font-size:15.5px; }
+}
 .search-input:focus { outline:none; }
 .search-input::placeholder { color:var(--steel-light); }
 .search-clear { background:none; border:none; width:28px; height:28px; border-radius:50%; display:none; align-items:center; justify-content:center; color:var(--steel); flex-shrink:0; }
@@ -281,6 +291,7 @@ button { font-family:inherit; cursor:pointer; }
 .adid-btn { display:inline-flex; align-items:center; gap:5px; background:var(--signal); color:var(--white); font-size:11.5px; font-weight:700; padding:6px 11px; border-radius:999px; border:none; flex-shrink:0; transition:transform .15s ease, background .15s ease; }
 .adid-btn:hover { background:var(--signal-dark); transform:translateY(-1px); }
 .adid-btn svg { width:13px; height:13px; }
+.adid-btn.copied { background:var(--signal-dark); }
 .detail-desc { font-size:13.5px; color:var(--ink-soft); line-height:1.7; margin:16px 0; white-space:pre-line; }
 .seller-card { background:var(--cloud); border:1px solid var(--line); border-radius:var(--radius-m); padding:16px; margin-top:8px; }
 .seller-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
@@ -290,6 +301,30 @@ button { font-family:inherit; cursor:pointer; }
 .whatsapp-btn { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; background:var(--whatsapp); color:var(--white); font-weight:700; font-size:14.5px; padding:13px; border-radius:999px; transition:background .15s ease, transform .15s ease; }
 .whatsapp-btn:hover { background:var(--whatsapp-dark); transform:translateY(-1px); }
 .whatsapp-btn svg { width:19px; height:19px; }
+
+/* Boost mini-FAB — sits directly above the Sell FAB */
+.boost-fab {
+  position:fixed;
+  right:16px;
+  bottom:calc(80px + env(safe-area-inset-bottom, 0px));
+  z-index:50;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  border:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--ink);
+  background:linear-gradient(155deg,#ffe7ad 0%,var(--spark) 55%,#d9860f 100%);
+  box-shadow:0 3px 0 #b9760a, 0 10px 22px -6px rgba(245,166,35,.65), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .15s ease, box-shadow .15s ease;
+  animation:fabIn .5s cubic-bezier(.2,.8,.2,1) .5s both, boostPulse 2.6s ease-in-out 1.2s infinite;
+}
+.boost-fab svg { width:21px; height:21px; filter:drop-shadow(0 1px 0 rgba(255,255,255,.4)); }
+.boost-fab:hover { transform:translateY(-2px); box-shadow:0 4px 0 #b9760a, 0 14px 28px -6px rgba(245,166,35,.75), inset 0 1px 0 rgba(255,255,255,.5); }
+.boost-fab:active { transform:translateY(1px) scale(.94); box-shadow:0 1px 0 #b9760a, 0 6px 14px -6px rgba(245,166,35,.6), inset 0 1px 0 rgba(255,255,255,.5); }
+@keyframes boostPulse { 0%,100%{ box-shadow:0 3px 0 #b9760a, 0 10px 22px -6px rgba(245,166,35,.65), inset 0 1px 0 rgba(255,255,255,.5); } 50%{ box-shadow:0 3px 0 #b9760a, 0 10px 30px -4px rgba(245,166,35,.9), inset 0 1px 0 rgba(255,255,255,.6); } }
 
 main { min-height:40vh; }
 </style>
@@ -396,6 +431,14 @@ main { min-height:40vh; }
   Sell Phone
 </button>
 
+<button id="boostFab" class="boost-fab" type="button" aria-label="Boost your ad" title="Boost your ad">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2c3 2 5 6 5 10 0 2-1 4-2 5l-1 3-4 0-1-3c-1-1-2-3-2-5 0-4 2-8 5-10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="12" cy="10" r="1.8" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M9 20l-1.5 2.3M15 20l1.5 2.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>
+</button>
+
 <div class="more-fab-wrap" id="moreFabWrap">
   <div class="more-menu" id="moreMenu">
     <button class="more-item share-item" id="shareItemBtn" type="button" aria-label="Share" title="Share">
@@ -409,9 +452,6 @@ main { min-height:40vh; }
     <button class="more-item dark-item" id="darkModeItemBtn" type="button" aria-label="Dark Mode" title="Dark Mode"></button>
     <button class="more-item helpline-item" id="helplineItemBtn" type="button" aria-label="Helpline" title="Helpline">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.3A8.9 8.9 0 0 0 12 4a8.8 8.8 0 0 0-7.6 13.3L3 21l3.8-1.3A8.9 8.9 0 0 0 12 21a8.9 8.9 0 0 0 5.6-15.7ZM12 19.3a7.4 7.4 0 0 1-3.8-1l-.3-.2-2.6.9.9-2.5-.2-.3A7.4 7.4 0 1 1 19.4 12 7.4 7.4 0 0 1 12 19.3Zm4-5.5c-.2-.1-1.3-.6-1.5-.7s-.3-.1-.5.1-.6.7-.8.9-.3.2-.5.1a6 6 0 0 1-1.8-1.1 6.6 6.6 0 0 1-1.2-1.5c-.1-.2 0-.3.1-.4l.4-.4.2-.4v-.4c0-.1-.5-1.2-.7-1.7s-.4-.4-.5-.4h-.4a.9.9 0 0 0-.6.3 2.7 2.7 0 0 0-.8 2 4.7 4.7 0 0 0 1 2.5 10.6 10.6 0 0 0 4.1 3.6c.6.2 1 .4 1.4.5a3.3 3.3 0 0 0 1.5.1 2.5 2.5 0 0 0 1.6-1.1 2 2 0 0 0 .1-1.1c-.1-.1-.2-.2-.4-.3Z"/></svg>
-    </button>
-    <button class="more-item boost-item" id="boostItemBtn" type="button" aria-label="Boost your App" title="Boost your App">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c3 2 5 6 5 10 0 2-1 4-2 5l-1 3-4 0-1-3c-1-1-2-3-2-5 0-4 2-8 5-10Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="10" r="1.7" stroke="currentColor" stroke-width="1.5"/><path d="M9 20l-1.5 2M15 20l1.5 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
     </button>
     <button class="more-item about-item" id="aboutItemBtn" type="button" aria-label="About Mobile Bazar" title="About">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="7.7" r="1" fill="currentColor"/></svg>
@@ -454,9 +494,9 @@ main { min-height:40vh; }
         <div id="modalBadges" style="display:flex;gap:8px;margin-bottom:8px;"></div>
         <div class="adid-row">
           <span><span class="adid-label">Ad ID</span><br/><span class="adid-value" id="modalAdId"></span></span>
-          <button type="button" class="adid-btn" id="modalAdIdSearchBtn">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Search by ID
+          <button type="button" class="adid-btn" id="modalAdIdCopyBtn">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="modalAdIdCopyLabel">Copy</span>
           </button>
         </div>
         <p class="detail-price" id="modalPrice"></p>
@@ -586,6 +626,7 @@ const CONFIG = {
   ANNOUNCEMENT_SHEET_NAME: "Sheet1",
   NOTIFICATIONS_SHEET_NAME: "Sheet3",
   SELL_FORM_URL: "https://online547.github.io/Ad-your-Post-/",
+  BOOST_FORM_URL: "https://online547.github.io/Bost-ads/",
   DEFAULT_WHATSAPP_MESSAGE: (name) => `Hi, I found your listing for "${name}" on Mobile Bazar. Is it still available?`,
 };
 CONFIG._sheetUrl = function (tabName) {
@@ -940,6 +981,8 @@ function wireSellButtons() {
     if (btn.tagName === "A") btn.href = sellUrl;
     else btn.addEventListener("click", () => window.open(sellUrl, "_blank", "noopener"));
   });
+  const boostFab = document.getElementById("boostFab");
+  if (boostFab) boostFab.addEventListener("click", () => window.open(CONFIG.BOOST_FORM_URL, "_blank", "noopener"));
 }
 
 function renderFeatured(list) {
@@ -1040,8 +1083,8 @@ function openAdModal(id) {
   document.getElementById("modalBadges").innerHTML = badges.join("");
 
   document.getElementById("modalAdId").textContent = ad.displayId;
-  const adIdSearchBtn = document.getElementById("modalAdIdSearchBtn");
-  if (adIdSearchBtn) adIdSearchBtn.onclick = () => searchByAdId(ad.displayId);
+  const adIdCopyBtn = document.getElementById("modalAdIdCopyBtn");
+  if (adIdCopyBtn) adIdCopyBtn.onclick = () => copyAdId(ad.displayId, adIdCopyBtn);
 
   document.getElementById("modalPrice").textContent = formatPrice(ad.price);
   document.getElementById("modalName").textContent = ad.name;
@@ -1097,13 +1140,34 @@ function switchModalImage(btn, src) {
 }
 
 function closeModal() { document.getElementById("modalOverlay").classList.remove("show"); }
-function searchByAdId(displayId) {
-  closeModal();
-  els.searchInput.value = displayId;
-  applySearch(displayId);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  els.searchInput.focus();
+
+function copyAdId(displayId, btnEl) {
+  const label = btnEl.querySelector("#modalAdIdCopyLabel") || btnEl.querySelector("span");
+  const finish = () => {
+    if (!label) return;
+    const original = "Copy";
+    label.textContent = "Copied!";
+    btnEl.classList.add("copied");
+    setTimeout(() => { label.textContent = original; btnEl.classList.remove("copied"); }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(displayId).then(finish).catch(() => fallbackCopy(displayId, finish));
+  } else {
+    fallbackCopy(displayId, finish);
+  }
 }
+function fallbackCopy(text, done) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+  if (done) done();
+}
+
 document.getElementById("modalOverlay").addEventListener("click", (e) => { if (e.target.id === "modalOverlay") closeModal(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeMyAds(); closeNotify(); closeAbout(); } });
 
@@ -1156,12 +1220,6 @@ const darkModeItemBtn = document.getElementById("darkModeItemBtn");
 if (darkModeItemBtn) darkModeItemBtn.addEventListener("click", toggleTheme);
 const helplineItemBtn = document.getElementById("helplineItemBtn");
 if (helplineItemBtn) helplineItemBtn.addEventListener("click", openHelpline);
-function openBoost() {
-  const text = "Hi, I want to boost/promote my ad on Mobile Bazar app. Please share the details.";
-  window.open("https://wa.me/923708431602?text=" + encodeURIComponent(text), "_blank", "noopener");
-}
-const boostItemBtn = document.getElementById("boostItemBtn");
-if (boostItemBtn) boostItemBtn.addEventListener("click", openBoost);
 const aboutItemBtn = document.getElementById("aboutItemBtn");
 if (aboutItemBtn) aboutItemBtn.addEventListener("click", openAbout);
 
