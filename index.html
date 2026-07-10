@@ -736,6 +736,8 @@ const MobileBazarData = (() => {
       approved: isYes(raw["approved"]),
       featured: isYes(raw["featured"]),
       postType: (raw["post type"] || "Free").toLowerCase(),
+      sheetViews: toNumberSafe(raw["views"]),
+      sheetLikes: toNumberSafe(raw["likes"]),
       order: rowIndex,
     };
   }
@@ -811,10 +813,12 @@ function formatCompactNumber(n) {
 const EYE_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>';
 const HEART_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20.3s-7.3-4.4-9.6-8.9C.8 7.5 2.7 4 6.2 4c2 0 3.5 1 5.8 3 2.3-2 3.8-3 5.8-3 3.5 0 5.4 3.5 3.8 7.4-2.3 4.5-9.6 8.9-9.6 8.9z" stroke="currentColor" stroke-width="1.6"/></svg>';
 
-/* ---- Engagement: fake-but-consistent views/likes, kept entirely in this browser (localStorage).
-   Every ad gets its own random-but-fixed "personality" (growth rate) so different ads climb at
-   different speeds/times, the way listings feel alive on real marketplace apps. Nothing is sent
-   anywhere — it only ever lives on the visitor's own device. ---- */
+/* ---- Engagement: views/likes shown to visitors = (manual number typed in the
+   "Views" / "Likes" sheet columns) + (auto organic growth, simulated locally
+   in this browser via localStorage) + (this visitor's own view/like clicks).
+   That way you can bump a number straight from the sheet any time, and it will
+   still keep climbing on its own in between your edits. Nothing is sent
+   anywhere — the auto-growth part only ever lives on the visitor's device. ---- */
 const Engagement = (() => {
   const STORE_KEY = "mb_engagement_v1";
   const LIKED_KEY = "mb_liked_ads_v1";
@@ -834,10 +838,10 @@ const Engagement = (() => {
     if (!store[adId]) {
       const seed = seedFromId(adId);
       store[adId] = {
-        baseViews: 35 + (seed % 260),
-        baseLikes: 2 + (seed % 35),
-        viewRate: 0.5 + ((seed % 97) / 97) * 2.4,
-        likeRate: 0.04 + ((seed % 53) / 53) * 0.5,
+        baseViews: 5 + (seed % 40),
+        baseLikes: 1 + (seed % 8),
+        viewRate: 0.25 + ((seed % 97) / 97) * 1.2,
+        likeRate: 0.02 + ((seed % 53) / 53) * 0.25,
         firstSeen: Date.now(),
       };
     }
@@ -854,13 +858,17 @@ const Engagement = (() => {
     };
   }
 
-  function getStats(adId) {
+  // sheetViews/sheetLikes are the manual numbers typed into the Google Sheet's
+  // "Views" / "Likes" columns for this ad (0 if left blank).
+  function getStats(adId, sheetViews, sheetLikes) {
+    sheetViews = sheetViews || 0;
+    sheetLikes = sheetLikes || 0;
     const store = loadStore();
     const entry = ensureEntry(store, adId);
     saveStore(store);
     const growth = computeGrowth(entry);
     const liked = loadLiked().includes(String(adId));
-    return { views: growth.views, likes: growth.likes, liked };
+    return { views: sheetViews + growth.views, likes: sheetLikes + growth.likes, liked };
   }
 
   function registerView(adId) {
@@ -887,8 +895,9 @@ const Engagement = (() => {
 })();
 
 function toggleCardLike(el, adId) {
+  const ad = allAds.all.find((a) => String(a.id) === String(adId));
   Engagement.toggleLike(adId);
-  const stats = Engagement.getStats(adId);
+  const stats = Engagement.getStats(adId, ad ? ad.sheetViews : 0, ad ? ad.sheetLikes : 0);
   const b = el.querySelector("b");
   if (b) b.textContent = formatCompactNumber(stats.likes);
   el.classList.toggle("liked", stats.liked);
@@ -897,7 +906,8 @@ function toggleCardLike(el, adId) {
 function refreshVisibleStats() {
   document.querySelectorAll(".card[data-ad-id]").forEach((card) => {
     const id = card.getAttribute("data-ad-id");
-    const stats = Engagement.getStats(id);
+    const ad = allAds.all.find((a) => String(a.id) === String(id));
+    const stats = Engagement.getStats(id, ad ? ad.sheetViews : 0, ad ? ad.sheetLikes : 0);
     const viewsB = card.querySelector(".stat-views b");
     const likesWrap = card.querySelector(".stat-likes");
     if (viewsB) viewsB.textContent = formatCompactNumber(stats.views);
@@ -915,7 +925,7 @@ function cardHtml(ad) {
   const badges = [];
   if (ad.featured) badges.push('<span class="badge badge-featured">Featured</span>');
   if (ad.postType === "paid") badges.push('<span class="badge badge-paid">Paid</span>');
-  const stats = Engagement.getStats(ad.id);
+  const stats = Engagement.getStats(ad.id, ad.sheetViews, ad.sheetLikes);
   return `
     <a class="card" href="javascript:void(0)" data-ad-id="${escapeHtml(ad.id)}" onclick="openAdModal('${escapeHtml(ad.id)}')">
       <div class="card-media">
@@ -1116,19 +1126,19 @@ function openAdModal(id) {
   document.getElementById("modalOverlay").classList.add("show");
 
   Engagement.registerView(ad.id);
-  updateModalStats(ad.id);
+  updateModalStats(ad);
   refreshVisibleStats();
 }
 
-function updateModalStats(adId) {
-  const stats = Engagement.getStats(adId);
+function updateModalStats(ad) {
+  const stats = Engagement.getStats(ad.id, ad.sheetViews, ad.sheetLikes);
   document.getElementById("modalViews").textContent = formatCompactNumber(stats.views);
   document.getElementById("modalLikeCount").textContent = formatCompactNumber(stats.likes);
   const likeBtn = document.getElementById("modalLikeBtn");
   likeBtn.classList.toggle("liked", stats.liked);
   likeBtn.onclick = () => {
-    Engagement.toggleLike(adId);
-    updateModalStats(adId);
+    Engagement.toggleLike(ad.id);
+    updateModalStats(ad);
     refreshVisibleStats();
   };
 }
