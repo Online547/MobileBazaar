@@ -18,6 +18,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://drive.google.com" />
+<link rel="dns-prefetch" href="https://drive.google.com" />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet" />
 
 <style>
@@ -336,15 +338,15 @@ button { font-family:inherit; cursor:pointer; }
   box-shadow:0 1px 2px rgba(23,26,33,.04), 0 8px 18px -14px rgba(23,26,33,.3);
 }
 .filter-scroll::-webkit-scrollbar { display:none; }
-.filter-chip { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; background:var(--cloud); border:1.5px solid transparent; color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:8px 13px; border-radius:999px; white-space:nowrap; transition:.15s ease; }
-.filter-chip svg { flex-shrink:0; }
+.filter-chip { flex-shrink:0; display:inline-flex; align-items:center; gap:5px; background:var(--cloud); border:1.5px solid transparent; color:var(--ink-soft); font-size:12px; font-weight:600; padding:7px 12px; border-radius:999px; white-space:nowrap; transition:.15s ease; }
+.filter-chip svg { width:13px; height:13px; flex-shrink:0; }
 .filter-chip:hover { border-color:var(--signal); color:var(--ink); }
 .filter-chip-primary { background:var(--ink); color:var(--white); border-color:var(--ink); }
 .filter-chip-primary:hover { background:var(--signal-dark); border-color:var(--signal-dark); color:var(--white); }
 .filter-chip-primary.has-filters { background:var(--signal); border-color:var(--signal); }
 .filter-count { background:var(--white); color:var(--ink); font-size:10.5px; font-weight:700; min-width:16px; height:16px; padding:0 4px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; }
 .brand-chip-row { display:flex; gap:8px; flex-shrink:0; padding-left:8px; margin-left:2px; border-left:1.5px solid var(--line); }
-.brand-chip { flex-shrink:0; background:var(--cloud); border:1.5px solid transparent; color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:8px 13px; border-radius:999px; white-space:nowrap; transition:.15s ease; }
+.brand-chip { flex-shrink:0; background:var(--cloud); border:1.5px solid transparent; color:var(--ink-soft); font-size:12px; font-weight:600; padding:7px 12px; border-radius:999px; white-space:nowrap; transition:.15s ease; }
 .brand-chip:hover { border-color:var(--signal); color:var(--ink); }
 .brand-chip.active { background:var(--signal-tint); border-color:var(--signal); color:var(--signal-dark); }
 
@@ -930,6 +932,14 @@ const MobileBazarData = (() => {
 function escapeHtml(str) {
   return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
+// Requests a right-sized Google Drive thumbnail (small for grid cards, bigger for the
+// detail view) instead of always downloading the same large image everywhere — this is
+// what makes card images load quickly.
+function driveThumb(url, size) {
+  if (!url) return url;
+  if (url.indexOf("drive.google.com/thumbnail") === -1) return url;
+  return url.replace(/([?&]sz=)w\d+/, `$1w${size}`);
+}
 function formatPrice(num) {
   if (!num || num <= 0) return "Price on call";
   return "Rs " + Math.round(num).toLocaleString("en-PK");
@@ -1059,7 +1069,7 @@ function isRecentlyPosted(ad) {
 }
 
 function cardHtml(ad) {
-  const img = ad.images[0] || PLACEHOLDER_IMG;
+  const img = driveThumb(ad.images[0], 320) || PLACEHOLDER_IMG;
   const badges = [];
   if (ad.featured) badges.push('<span class="badge badge-featured">Featured</span>');
   if (ad.postType === "paid") badges.push('<span class="badge badge-paid">Paid</span>');
@@ -1069,7 +1079,7 @@ function cardHtml(ad) {
     <a class="card" href="javascript:void(0)" data-ad-id="${escapeHtml(ad.id)}" onclick="openAdModal('${escapeHtml(ad.id)}')">
       <div class="card-media">
         ${badges.length ? `<div class="card-badges">${badges.join("")}</div>` : ""}
-        <img src="${escapeHtml(img)}" alt="${escapeHtml(ad.name)}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'" />
+        <img src="${escapeHtml(img)}" alt="${escapeHtml(ad.name)}" loading="lazy" decoding="async" onerror="this.src='${PLACEHOLDER_IMG}'" />
       </div>
       <div class="card-body">
         <span class="card-price">${formatPrice(ad.price)}</span>
@@ -1418,13 +1428,13 @@ function openAdModal(id) {
   if (!ad) return;
 
   const images = ad.images.length ? ad.images : [PLACEHOLDER_IMG];
-  document.getElementById("modalImg").src = images[0];
+  document.getElementById("modalImg").src = driveThumb(images[0], 900);
   document.getElementById("modalImg").alt = ad.name;
 
   document.getElementById("modalThumbs").innerHTML = images.length > 1
     ? images.map((img, i) => `
-      <button class="gallery-thumb ${i === 0 ? "active" : ""}" type="button" onclick="switchModalImage(this,'${escapeHtml(img)}')">
-        <img src="${escapeHtml(img)}" alt="" loading="lazy" />
+      <button class="gallery-thumb ${i === 0 ? "active" : ""}" type="button" onclick="switchModalImage(this,'${escapeHtml(driveThumb(img, 900))}')">
+        <img src="${escapeHtml(driveThumb(img, 120))}" alt="" loading="lazy" decoding="async" />
       </button>`).join("")
     : "";
 
