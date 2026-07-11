@@ -202,6 +202,7 @@ button { font-family:inherit; cursor:pointer; }
 .badge { font-size:7px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:1.5px 5px; border-radius:999px; backdrop-filter:blur(4px); }
 .badge-featured { background:rgba(245,166,35,.92); color:var(--ink); }
 .badge-paid { background:rgba(23,26,33,.85); color:var(--white); }
+.badge-new { background:rgba(14,156,147,.92); color:var(--white); }
 .card-body { padding:5px 6px 6px; display:flex; flex-direction:column; gap:2px; flex:1; }
 .card-price { font-family:var(--font-mono); font-weight:700; font-size:10px; color:var(--signal-dark); }
 .card-name { font-size:9.5px; font-weight:600; color:var(--ink); line-height:1.22; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -326,6 +327,60 @@ button { font-family:inherit; cursor:pointer; }
 .boost-fab:active { transform:translateY(1px) scale(.94); box-shadow:0 1px 0 #b9760a, 0 6px 14px -6px rgba(245,166,35,.6), inset 0 1px 0 rgba(255,255,255,.5); }
 @keyframes boostPulse { 0%,100%{ box-shadow:0 3px 0 #b9760a, 0 10px 22px -6px rgba(245,166,35,.65), inset 0 1px 0 rgba(255,255,255,.5); } 50%{ box-shadow:0 3px 0 #b9760a, 0 10px 30px -4px rgba(245,166,35,.9), inset 0 1px 0 rgba(255,255,255,.6); } }
 
+/* Filter bar — a raised toolbar "shelf", not a flat chip strip */
+.filter-bar { position:sticky; top:60px; z-index:30; padding:12px 0 10px; background:var(--cloud); }
+@media (min-width:640px){ .filter-bar{ top:68px; } }
+.filter-scroll {
+  display:flex; align-items:center; gap:8px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  background:var(--white); border:1px solid var(--line); border-radius:16px; padding:7px 8px;
+  box-shadow:0 1px 2px rgba(23,26,33,.04), 0 8px 18px -14px rgba(23,26,33,.3);
+}
+.filter-scroll::-webkit-scrollbar { display:none; }
+.filter-chip { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; background:var(--cloud); border:1.5px solid transparent; color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:8px 13px; border-radius:999px; white-space:nowrap; transition:.15s ease; }
+.filter-chip svg { flex-shrink:0; }
+.filter-chip:hover { border-color:var(--signal); color:var(--ink); }
+.filter-chip-primary { background:var(--ink); color:var(--white); border-color:var(--ink); }
+.filter-chip-primary:hover { background:var(--signal-dark); border-color:var(--signal-dark); color:var(--white); }
+.filter-chip-primary.has-filters { background:var(--signal); border-color:var(--signal); }
+.filter-count { background:var(--white); color:var(--ink); font-size:10.5px; font-weight:700; min-width:16px; height:16px; padding:0 4px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; }
+.brand-chip-row { display:flex; gap:8px; flex-shrink:0; padding-left:8px; margin-left:2px; border-left:1.5px solid var(--line); }
+.brand-chip { flex-shrink:0; background:var(--cloud); border:1.5px solid transparent; color:var(--ink-soft); font-size:12.5px; font-weight:600; padding:8px 13px; border-radius:999px; white-space:nowrap; transition:.15s ease; }
+.brand-chip:hover { border-color:var(--signal); color:var(--ink); }
+.brand-chip.active { background:var(--signal-tint); border-color:var(--signal); color:var(--signal-dark); }
+
+/* Active filter summary row */
+.active-filters { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 0 0; }
+.active-filter-tag { display:inline-flex; align-items:center; gap:6px; background:var(--signal-tint); color:var(--signal-dark); font-size:12px; font-weight:600; padding:6px 8px 6px 12px; border-radius:999px; }
+.active-filter-tag button { display:flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:rgba(11,127,120,.15); flex-shrink:0; }
+.active-filter-tag button svg { width:9px; height:9px; }
+.active-filters-clear { font-size:12px; font-weight:700; color:var(--steel); background:none; border:none; text-decoration:underline; padding:6px 2px; }
+.active-filters-results { font-size:12px; color:var(--steel); font-weight:600; padding:6px 0; }
+
+/* Filter modal internals */
+.filter-group { margin-bottom:20px; }
+.filter-label { display:block; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--steel); font-weight:700; margin-bottom:9px; }
+.price-spectrum { position:relative; height:8px; border-radius:999px; margin-bottom:12px; background:linear-gradient(90deg, var(--signal-tint) 0%, var(--signal) 35%, var(--spark) 75%, #e0862c 100%); }
+.spectrum-tick { position:absolute; top:-3px; width:1.5px; height:14px; background:var(--white); opacity:.6; }
+.spectrum-tick:nth-child(1){ left:0; } .spectrum-tick:nth-child(2){ left:25%; } .spectrum-tick:nth-child(3){ left:50%; } .spectrum-tick:nth-child(4){ left:75%; } .spectrum-tick:nth-child(5){ left:100%; }
+.price-range-row { display:flex; align-items:center; gap:10px; }
+.price-input { margin-bottom:0; font-family:var(--font-mono); }
+.price-range-sep { color:var(--steel-light); font-weight:600; flex-shrink:0; }
+.price-preset-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:9px; }
+.price-preset-btn { font-size:11.5px; font-weight:600; color:var(--steel); background:var(--cloud); border:1px solid var(--line); padding:5px 10px; border-radius:999px; transition:.15s ease; }
+.price-preset-btn:hover { border-color:var(--signal); color:var(--signal-dark); }
+.pill-row { display:flex; gap:8px; flex-wrap:wrap; }
+.pill-btn { font-size:12.5px; font-weight:600; color:var(--ink-soft); background:var(--cloud); border:1.5px solid var(--line); padding:8px 14px; border-radius:999px; transition:.15s ease; }
+.pill-btn:hover { border-color:var(--signal); }
+.pill-btn.active { background:var(--signal); border-color:var(--signal); color:var(--white); }
+.filter-actions { display:flex; gap:10px; margin-top:24px; }
+.filter-reset-btn { flex-shrink:0; font-size:14px; font-weight:700; color:var(--ink-soft); background:var(--cloud); border:1.5px solid var(--line); padding:0 18px; border-radius:999px; }
+.filter-reset-btn:hover { border-color:var(--steel); }
+
+/* Featured cards get a touch more spotlight than regular grid cards */
+.featured-rail .card { position:relative; border-color:transparent; }
+.featured-rail .card::after { content:""; position:absolute; inset:0; border-radius:12px; border:1.5px solid var(--spark); opacity:.55; pointer-events:none; }
+.featured-rail .card:hover::after { opacity:.9; }
+
 main { min-height:40vh; }
 </style>
 </head>
@@ -395,6 +450,23 @@ main { min-height:40vh; }
   <div class="container">
     <div id="topAdSlot" class="ad-slot" aria-hidden="true"></div>
 
+    <div class="filter-bar">
+      <div class="filter-scroll" id="filterScroll">
+        <button type="button" class="filter-chip filter-chip-primary" id="openFiltersBtn">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Filters
+          <span class="filter-count" id="filterCount" style="display:none;"></span>
+        </button>
+        <button type="button" class="filter-chip" id="sortChipBtn">
+          <span id="sortChipLabel">Newest</span>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div id="brandChipRow" class="brand-chip-row"></div>
+      </div>
+    </div>
+
+    <div class="active-filters" id="activeFiltersRow" style="display:none;"></div>
+
     <section class="section" id="featuredSection" style="display:none;">
       <div class="section-head">
         <h2 class="section-title"><span class="dot"></span>Featured Listings</h2>
@@ -415,8 +487,9 @@ main { min-height:40vh; }
       <div id="adGrid" class="ad-grid" style="display:none;"></div>
 
       <div id="noResults" class="no-results">
-        <p class="no-results-title">No matching listings</p>
-        <p>Try a different phone name, brand, or city.</p>
+        <p class="no-results-title" id="noResultsTitle">No matching listings</p>
+        <p id="noResultsDesc">Try a different phone name, brand, or city.</p>
+        <button type="button" class="filter-reset-btn" id="noResultsClearBtn" style="display:none;margin:14px auto 0;">Clear Search &amp; Filters</button>
       </div>
     </section>
 
@@ -599,6 +672,63 @@ main { min-height:40vh; }
   </div>
 </div>
 
+<!-- Search filters — price range, brand, condition, PTA, sort -->
+<div class="modal-overlay" id="filterOverlay">
+  <div class="modal-card" style="max-width:480px;">
+    <button class="modal-close" type="button" onclick="closeFilterModal()" aria-label="Close">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="modal-body" style="padding-top:52px;">
+      <h2 class="detail-name" style="margin-bottom:18px;">Filters</h2>
+
+      <div class="filter-group">
+        <label class="filter-label">Price Range (Rs)</label>
+        <div class="price-spectrum" aria-hidden="true">
+          <span class="spectrum-tick"></span><span class="spectrum-tick"></span><span class="spectrum-tick"></span><span class="spectrum-tick"></span><span class="spectrum-tick"></span>
+        </div>
+        <div class="price-range-row">
+          <input type="number" inputmode="numeric" id="filterMinPrice" class="myads-input price-input" placeholder="Min" min="0" />
+          <span class="price-range-sep">—</span>
+          <input type="number" inputmode="numeric" id="filterMaxPrice" class="myads-input price-input" placeholder="Max" min="0" />
+        </div>
+        <div class="price-preset-row" id="pricePresetRow"></div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Condition</label>
+        <div class="pill-row" id="conditionPillRow">
+          <button type="button" class="pill-btn active" data-condition="">Any</button>
+          <button type="button" class="pill-btn" data-condition="New">New</button>
+          <button type="button" class="pill-btn" data-condition="Used">Used</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">PTA Approved</label>
+        <div class="pill-row" id="ptaPillRow">
+          <button type="button" class="pill-btn active" data-pta="">Any</button>
+          <button type="button" class="pill-btn" data-pta="yes">PTA Approved</button>
+          <button type="button" class="pill-btn" data-pta="no">Non PTA</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Sort By</label>
+        <div class="pill-row" id="sortPillRow">
+          <button type="button" class="pill-btn active" data-sort="newest">Newest</button>
+          <button type="button" class="pill-btn" data-sort="price_low">Price: Low to High</button>
+          <button type="button" class="pill-btn" data-sort="price_high">Price: High to Low</button>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" class="filter-reset-btn" id="filterResetBtn">Reset</button>
+        <button type="button" class="whatsapp-btn" id="filterApplyBtn" style="background:var(--signal);">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Notifications / Updates panel — content comes from Sheet3 -->
 <div class="modal-overlay" id="notifyOverlay">
   <div class="modal-card" style="max-width:480px;">
@@ -738,6 +868,7 @@ const MobileBazarData = (() => {
       postType: (raw["post type"] || "Free").toLowerCase(),
       sheetViews: toNumberSafe(raw["views"]),
       sheetLikes: toNumberSafe(raw["likes"]),
+      timestamp: raw["timestamp"] || "",
       order: rowIndex,
     };
   }
@@ -920,11 +1051,19 @@ function refreshVisibleStats() {
 }
 setInterval(refreshVisibleStats, 22000 + Math.random() * 13000);
 
+function isRecentlyPosted(ad) {
+  if (!ad.timestamp) return false;
+  const t = Date.parse(ad.timestamp);
+  if (isNaN(t)) return false;
+  return (Date.now() - t) / 3600000 <= 48; // posted within last 48 hours
+}
+
 function cardHtml(ad) {
   const img = ad.images[0] || PLACEHOLDER_IMG;
   const badges = [];
   if (ad.featured) badges.push('<span class="badge badge-featured">Featured</span>');
   if (ad.postType === "paid") badges.push('<span class="badge badge-paid">Paid</span>');
+  if (isRecentlyPosted(ad)) badges.push('<span class="badge badge-new">New</span>');
   const stats = Engagement.getStats(ad.id, ad.sheetViews, ad.sheetLikes);
   return `
     <a class="card" href="javascript:void(0)" data-ad-id="${escapeHtml(ad.id)}" onclick="openAdModal('${escapeHtml(ad.id)}')">
@@ -1001,44 +1140,245 @@ function renderFeatured(list) {
   els.featuredRail.innerHTML = list.map(cardHtml).join("");
 }
 
-function renderGrid(list) {
+function renderGrid(list, hasQueryOrFilters) {
   els.skeletonGrid.style.display = "none";
   if (!list.length) {
     els.adGrid.style.display = "none";
     els.noResults.classList.add("show");
+    const titleEl = document.getElementById("noResultsTitle");
+    const descEl = document.getElementById("noResultsDesc");
+    const clearBtn = document.getElementById("noResultsClearBtn");
+    if (hasQueryOrFilters) {
+      if (titleEl) titleEl.textContent = "No listings match your search";
+      if (descEl) descEl.textContent = "Try widening your price range or removing a filter.";
+      if (clearBtn) clearBtn.style.display = "";
+    } else {
+      if (titleEl) titleEl.textContent = "No matching listings";
+      if (descEl) descEl.textContent = "Try a different phone name, brand, or city.";
+      if (clearBtn) clearBtn.style.display = "none";
+    }
     return;
   }
   els.noResults.classList.remove("show");
   els.adGrid.style.display = "";
   els.adGrid.innerHTML = list.map(cardHtml).join("");
 }
+const noResultsClearBtn = document.getElementById("noResultsClearBtn");
+if (noResultsClearBtn) noResultsClearBtn.addEventListener("click", () => {
+  els.searchInput.value = "";
+  activeFilters = { brand: "", minPrice: null, maxPrice: null, condition: "", pta: "", sort: "newest" };
+  renderBrandChips();
+  applySearch("");
+});
+
+/* ---- 4b. Search filters (price range / brand / condition / PTA / sort) ---- */
+const SORT_LABELS = { newest: "Newest", price_low: "Price: Low to High", price_high: "Price: High to Low" };
+let activeFilters = { brand: "", minPrice: null, maxPrice: null, condition: "", pta: "", sort: "newest" };
+let knownBrands = [];
+
+function filterCountActive() {
+  let c = 0;
+  if (activeFilters.brand) c++;
+  if (activeFilters.minPrice != null) c++;
+  if (activeFilters.maxPrice != null) c++;
+  if (activeFilters.condition) c++;
+  if (activeFilters.pta) c++;
+  return c;
+}
+
+function sortAds(list) {
+  const sorted = list.slice();
+  if (activeFilters.sort === "price_low") sorted.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
+  else if (activeFilters.sort === "price_high") sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+  else sorted.sort((a, b) => b.order - a.order);
+  return sorted;
+}
+
+function applyAllFilters(list) {
+  let out = list;
+  if (activeFilters.brand) out = out.filter((ad) => ad.brand.toLowerCase() === activeFilters.brand.toLowerCase());
+  if (activeFilters.minPrice != null) out = out.filter((ad) => ad.price >= activeFilters.minPrice);
+  if (activeFilters.maxPrice != null) out = out.filter((ad) => ad.price > 0 && ad.price <= activeFilters.maxPrice);
+  if (activeFilters.condition) out = out.filter((ad) => ad.condition.toLowerCase() === activeFilters.condition.toLowerCase());
+  if (activeFilters.pta === "yes") out = out.filter((ad) => /yes/i.test(ad.pta));
+  if (activeFilters.pta === "no") out = out.filter((ad) => ad.pta && !/yes/i.test(ad.pta));
+  return sortAds(out);
+}
+
+function renderBrandChips() {
+  const row = document.getElementById("brandChipRow");
+  if (!row) return;
+  const brands = Array.from(new Set(allAds.all.map((ad) => ad.brand).filter((b) => b && b.trim() !== ""))).sort();
+  knownBrands = brands;
+  row.innerHTML = brands.map((b) => `<button type="button" class="brand-chip${activeFilters.brand === b ? " active" : ""}" data-brand="${escapeHtml(b)}">${escapeHtml(b)}</button>`).join("");
+  row.querySelectorAll(".brand-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const b = btn.getAttribute("data-brand");
+      activeFilters.brand = activeFilters.brand === b ? "" : b;
+      renderBrandChips();
+      applySearch();
+    });
+  });
+}
+
+function renderActiveFilterChips() {
+  const row = document.getElementById("activeFiltersRow");
+  if (!row) return;
+  const tags = [];
+  if (activeFilters.brand) tags.push({ key: "brand", label: activeFilters.brand });
+  if (activeFilters.minPrice != null || activeFilters.maxPrice != null) {
+    const min = activeFilters.minPrice != null ? "Rs " + activeFilters.minPrice.toLocaleString("en-PK") : "Rs 0";
+    const max = activeFilters.maxPrice != null ? "Rs " + activeFilters.maxPrice.toLocaleString("en-PK") : "Any";
+    tags.push({ key: "price", label: `${min} – ${max}` });
+  }
+  if (activeFilters.condition) tags.push({ key: "condition", label: activeFilters.condition });
+  if (activeFilters.pta) tags.push({ key: "pta", label: activeFilters.pta === "yes" ? "PTA Approved" : "Non PTA" });
+  if (activeFilters.sort !== "newest") tags.push({ key: "sort", label: SORT_LABELS[activeFilters.sort] });
+
+  if (!tags.length) { row.style.display = "none"; row.innerHTML = ""; return; }
+  row.style.display = "";
+  row.innerHTML = tags.map((t) => `
+    <span class="active-filter-tag" data-key="${t.key}">
+      ${escapeHtml(t.label)}
+      <button type="button" aria-label="Remove filter" onclick="removeActiveFilter('${t.key}')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+    </span>`).join("") + `<button type="button" class="active-filters-clear" onclick="resetAllFilters()">Clear all</button>`;
+}
+
+function removeActiveFilter(key) {
+  if (key === "brand") activeFilters.brand = "";
+  else if (key === "price") { activeFilters.minPrice = null; activeFilters.maxPrice = null; }
+  else if (key === "condition") activeFilters.condition = "";
+  else if (key === "pta") activeFilters.pta = "";
+  else if (key === "sort") activeFilters.sort = "newest";
+  renderBrandChips();
+  applySearch();
+}
+
+function resetAllFilters() {
+  activeFilters = { brand: "", minPrice: null, maxPrice: null, condition: "", pta: "", sort: "newest" };
+  renderBrandChips();
+  applySearch();
+}
 
 function applySearch(query) {
-  const q = query.trim().toLowerCase();
+  const q = (query !== undefined ? query : els.searchInput.value).trim().toLowerCase();
   els.searchClear.classList.toggle("show", q.length > 0);
 
-  if (!q) {
+  const count = filterCountActive();
+  const openBtn = document.getElementById("openFiltersBtn");
+  const countEl = document.getElementById("filterCount");
+  if (openBtn) openBtn.classList.toggle("has-filters", count > 0);
+  if (countEl) { countEl.style.display = count > 0 ? "inline-flex" : "none"; countEl.textContent = String(count); }
+  const sortLabel = document.getElementById("sortChipLabel");
+  if (sortLabel) sortLabel.textContent = SORT_LABELS[activeFilters.sort];
+
+  renderActiveFilterChips();
+
+  const hasFilters = count > 0;
+
+  if (!q && !hasFilters) {
     els.listingTitle.innerHTML = '<span class="dot"></span>All Listings';
-    els.listingCount.textContent = allAds.listing.length ? `${allAds.listing.length} available` : "";
+    const sortedListing = activeFilters.sort === "newest" ? allAds.listing : sortAds(allAds.listing);
+    els.listingCount.textContent = sortedListing.length ? `${sortedListing.length} available` : "";
     renderFeatured(allAds.featured);
-    renderGrid(allAds.listing);
+    renderGrid(sortedListing);
     return;
   }
 
   els.featuredSection.style.display = "none";
-  const matches = allAds.all.filter((ad) =>
-    ad.name.toLowerCase().includes(q) ||
-    ad.brand.toLowerCase().includes(q) ||
-    ad.city.toLowerCase().includes(q) ||
-    (ad.displayId && ad.displayId.toLowerCase().includes(q))
-  );
-  els.listingTitle.innerHTML = '<span class="dot"></span>Search Results';
+  let base = allAds.all;
+  if (q) {
+    base = base.filter((ad) =>
+      ad.name.toLowerCase().includes(q) ||
+      ad.brand.toLowerCase().includes(q) ||
+      ad.city.toLowerCase().includes(q) ||
+      (ad.displayId && ad.displayId.toLowerCase().includes(q))
+    );
+  }
+  const matches = applyAllFilters(base);
+  els.listingTitle.innerHTML = q ? '<span class="dot"></span>Search Results' : '<span class="dot"></span>All Listings';
   els.listingCount.textContent = matches.length ? `${matches.length} found` : "";
-  renderGrid(matches);
+  renderGrid(matches, true);
 }
 
 els.searchInput.addEventListener("input", (e) => applySearch(e.target.value));
 els.searchClear.addEventListener("click", () => { els.searchInput.value = ""; applySearch(""); els.searchInput.focus(); });
+
+/* ---- Filter modal wiring ---- */
+const PRICE_PRESETS = [
+  { label: "Under Rs 20k", min: null, max: 20000 },
+  { label: "Rs 20k – 40k", min: 20000, max: 40000 },
+  { label: "Rs 40k – 80k", min: 40000, max: 80000 },
+  { label: "Above Rs 80k", min: 80000, max: null },
+];
+const pricePresetRow = document.getElementById("pricePresetRow");
+if (pricePresetRow) {
+  pricePresetRow.innerHTML = PRICE_PRESETS.map((p, i) => `<button type="button" class="price-preset-btn" data-preset="${i}">${p.label}</button>`).join("");
+  pricePresetRow.querySelectorAll(".price-preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const preset = PRICE_PRESETS[Number(btn.getAttribute("data-preset"))];
+      document.getElementById("filterMinPrice").value = preset.min != null ? preset.min : "";
+      document.getElementById("filterMaxPrice").value = preset.max != null ? preset.max : "";
+    });
+  });
+}
+
+function setPillGroupActive(rowId, attr, value) {
+  document.querySelectorAll(`#${rowId} .pill-btn`).forEach((btn) => {
+    btn.classList.toggle("active", btn.getAttribute(attr) === value);
+  });
+}
+
+["conditionPillRow", "ptaPillRow", "sortPillRow"].forEach((rowId) => {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  row.querySelectorAll(".pill-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      row.querySelectorAll(".pill-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+  });
+});
+
+function openFilterModal() {
+  document.getElementById("filterMinPrice").value = activeFilters.minPrice != null ? activeFilters.minPrice : "";
+  document.getElementById("filterMaxPrice").value = activeFilters.maxPrice != null ? activeFilters.maxPrice : "";
+  setPillGroupActive("conditionPillRow", "data-condition", activeFilters.condition);
+  setPillGroupActive("ptaPillRow", "data-pta", activeFilters.pta);
+  setPillGroupActive("sortPillRow", "data-sort", activeFilters.sort);
+  document.getElementById("filterOverlay").classList.add("show");
+}
+function closeFilterModal() { document.getElementById("filterOverlay").classList.remove("show"); }
+
+const openFiltersBtn = document.getElementById("openFiltersBtn");
+if (openFiltersBtn) openFiltersBtn.addEventListener("click", openFilterModal);
+const sortChipBtn = document.getElementById("sortChipBtn");
+if (sortChipBtn) sortChipBtn.addEventListener("click", openFilterModal);
+
+const filterApplyBtn = document.getElementById("filterApplyBtn");
+if (filterApplyBtn) filterApplyBtn.addEventListener("click", () => {
+  const minVal = document.getElementById("filterMinPrice").value;
+  const maxVal = document.getElementById("filterMaxPrice").value;
+  activeFilters.minPrice = minVal !== "" ? Math.max(0, parseInt(minVal, 10) || 0) : null;
+  activeFilters.maxPrice = maxVal !== "" ? Math.max(0, parseInt(maxVal, 10) || 0) : null;
+  const activeCondition = document.querySelector("#conditionPillRow .pill-btn.active");
+  activeFilters.condition = activeCondition ? activeCondition.getAttribute("data-condition") : "";
+  const activePta = document.querySelector("#ptaPillRow .pill-btn.active");
+  activeFilters.pta = activePta ? activePta.getAttribute("data-pta") : "";
+  const activeSort = document.querySelector("#sortPillRow .pill-btn.active");
+  activeFilters.sort = activeSort ? activeSort.getAttribute("data-sort") : "newest";
+  closeFilterModal();
+  applySearch();
+});
+const filterResetBtn = document.getElementById("filterResetBtn");
+if (filterResetBtn) filterResetBtn.addEventListener("click", () => {
+  resetAllFilters();
+  closeFilterModal();
+});
+const filterOverlayEl = document.getElementById("filterOverlay");
+if (filterOverlayEl) filterOverlayEl.addEventListener("click", (e) => { if (e.target.id === "filterOverlay") closeFilterModal(); });
 
 async function loadAnnouncement() {
   const ann = await MobileBazarData.getAnnouncement();
@@ -1063,6 +1403,7 @@ async function loadAds() {
     return;
   }
   allAds = data;
+  renderBrandChips();
   applySearch(els.searchInput.value || "");
 }
 
@@ -1090,6 +1431,7 @@ function openAdModal(id) {
   const badges = [];
   if (ad.featured) badges.push('<span class="badge badge-featured">Featured</span>');
   if (ad.postType === "paid") badges.push('<span class="badge badge-paid">Paid</span>');
+  if (isRecentlyPosted(ad)) badges.push('<span class="badge badge-new">New</span>');
   document.getElementById("modalBadges").innerHTML = badges.join("");
 
   document.getElementById("modalAdId").textContent = ad.displayId;
@@ -1179,7 +1521,7 @@ function fallbackCopy(text, done) {
 }
 
 document.getElementById("modalOverlay").addEventListener("click", (e) => { if (e.target.id === "modalOverlay") closeModal(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeMyAds(); closeNotify(); closeAbout(); } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeMyAds(); closeNotify(); closeAbout(); closeFilterModal(); } });
 
 /* ---- 6. Theme (dark mode) — preference kept in this browser only ---- */
 const THEME_KEY = "mb_theme_v1";
